@@ -1,0 +1,50 @@
+@charset "UTF-8";
+        * {
+            font-family: NanumGothic, 'Malgun Gothic';
+        }
+
+        .-text-highlight {
+            color: #0f0f0f;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        a:link {
+            text-decoration: none;
+        }
+
+        a:visited {
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .search-form {
+            text-align: right;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .page-form {
+            text-align: center;
+            font-size: 1.5em;
+        }
+
+        .write-button {
+            text-align: right;
+            margin-right: 50px;
+        }
+
+        ul li {
+            list-style-type: none;
+        }
+
+        table {
+            table-layout: fixed;
+            word-break: break-all;
+        }
