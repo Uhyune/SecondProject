@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pjnotice">
+	
+	<!-- 공지사항 전체 목록 -->
+	<select id="all" resultType="bitcamp.project.vo.PjNoticeVO">
+		SELECT * FROM PJ_NOTICE ORDER BY REGDATE DESC 
+	</select>
+	
+	<!-- 공지사항 입력 -->
+	<insert id="insert" parameterType="bitcamp.project.vo.PjNoticeVO">
+		INSERT INTO PJ_NOTICE 
+			(PJ_IDX, WRITER, PWD, REGDATE, EDITDATE, HIT, TITLE, CONTENT)
+		VALUES 
+			(PJNOTICE_SEQ.NEXTVAL, #{writer}, #{pwd}, SYSDATE, SYSDATE, 0, #{title}, #{content})	
+	</insert>
+	
+	<!-- 상세보기 -->
+	<select id="one" parameterType="int" resultType="bitcamp.project.vo.PjNoticeVO">
+		SELECT 
+			PJ_IDX, WRITER, TITLE, CONTENT, REGDATE, EDITDATE, HIT
+		FROM PJ_NOTICE
+		WHERE PJ_IDX = #{pj_idx}
+	</select>
+	
+	<!-- 수정 -->
+	<update id="update" parameterType="bitcamp.project.vo.PjNoticeVO">
+		UPDATE PJ_NOTICE
+		SET TITLE = #{title},
+    		CONTENT = #{content}
+		WHERE PJ_IDX = #{pj_idx}	
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="delete" parameterType="string">
+		DELETE FROM PJ_NOTICE WHERE PJ_IDX = #{pj_idx}	
+	</delete>
+	
+	<!-- ==================검색======================= -->
+	
+	 <!-- 대소문자 구분없는 검색을 위한 filed & keyword 에 upper 처리 -->
+     <select id="getListWithKeyword" resultType="bitcamp.project.vo.PjNoticeVO" parameterType="map">
+       	SELECT * FROM PJ_NOTICE
+       	WHERE UPPER(#{field}) LIKE '%' || UPPER (#{query}) || '%'
+       	ORDER BY PJ_IDX DESC
+    </select>
+
+	
+	<!-- =====================페이징================== -->
+	
+	<!--  전체 게시글 개수 조회 -->
+	<select id="totalCount" resultType="int">
+		SELECT COUNT(*) AS CNT FROM PJ_NOTICE
+	</select>
+	
+	<!-- 페이지 해당 게시글 조회 -->
+	<select id="list" resultType="bitcamp.project.vo.PjNoticeVO" parameterType="map">
+		SELECT * FROM (
+        		SELECT ROWNUM R_NUM, PJ_NOTICE.* FROM (
+        				SELECT * FROM PJ_NOTICE
+        					ORDER BY REGDATE DESC
+        				)PJ_NOTICE 
+					) WHERE R_NUM BETWEEN ${begin} AND ${end}
+	</select>
+	  
+	<!-- ===================댓글=================== -->
+	<!-- 댓글 조회 -->
+<!--  	<select id="commList" parameterType="int" resultType="bitcamp.project.vo.PjCommentVO">
+		SELECT C_IDX, WRITER, CONTENT, WRITE_DATE
+		FROM PJ_COMMENT
+    	WHERE PJ_IDX = #{pj_idx}
+    	ORDER BY C_IDX DESC
+	</select> -->
+	
+	<!-- 댓글 입력 -->
+<!-- 	<insert id="com_in" parameterType="bitcamp.project.vo.PjCommentVO">
+		INSERT INTO PJ_COMMENT
+		VALUES (COMMENT_T_SEQ.NEXTVAL, #{writer}, #{content},
+        #{pwd}, SYSDATE, #{pj_idx});
+	</insert>
+ -->	
+	
+	<!-- 댓글 삭제 -->
+<!--  <delete id="com_delete" parameterType="string">
+		DELETE FROM PJ_COMMENT
+		WHERE C_IDX = #{c_idx}
+	</delete> 
+-->		
+	<!-- 댓글 개수 -->
+<!-- 	<update id="update_com_count" parameterType="int">
+		UPDATE PJ_NOTICE PN
+			SET PN.COM_COUNT = (SELECT COUNT(C_IDX)
+                    			FROM PJ_COMMENT
+                   				 WHERE PJ_IDX = #{pj_idx})
+			WHERE PN.PJ_IDX = #{pj_idx}
+	</update>
+ -->	
+	<!-- ===================조회수=================== -->
+	<update id="hitup" parameterType="int">
+		UPDATE PJ_NOTICE 
+		SET HIT = HIT+1
+    	WHERE PJ_IDX = #{pj_idx}	
+	</update>
+	
+</mapper>
