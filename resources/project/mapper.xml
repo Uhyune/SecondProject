@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pjnotice">
+	
+	<!-- 공지사항 전체 목록 -->
+	<select id="all" resultType="com.servlet.project.vo.PjNoticeVO">
+		SELECT * FROM PJ_NOTICE ORDER BY PJ_IDX DESC
+	</select>
+	
+	<!-- 공지사항 입력 -->
+	<insert id="insert" parameterType="com.servlet.project.vo.PjNoticeVO">
+		INSERT INTO PJ_NOTICE 
+			(PJ_IDX, WRITER, REGDATE, EDITDATE, HIT, TITLE, CONTENT)
+		VALUES 
+			(PJ_NOTICE_SEQ.NEXTVAL, #{writer}, SYSDATE, SYSDATE, 0, #{title}, #{content})
+	</insert>
+	
+	<!-- 상세보기 -->
+	<select id="one" parameterType="int" resultType="com.servlet.project.vo.PjNoticeVO">
+		SELECT 
+			PJ_IDX, WRITER, TITLE, CONTENT, REGDATE, EDITDATE, HIT, FILE_NAME
+		FROM PJ_NOTICE
+		WHERE PJ_IDX = #{pj_idx}
+	</select>
+	
+	<!-- 수정 -->
+	<update id="update" parameterType="com.servlet.project.vo.PjNoticeVO">
+		UPDATE PJ_NOTICE
+		SET TITLE = #{title},
+    		CONTENT = #{content},
+    		FILE_NAME = #{file_name},
+    		EDITDATE = SYSDATE
+		WHERE PJ_IDX = #{pj_idx}	
+	</update>
+	
+	<!-- 삭제 -->
+	<delete id="delete" parameterType="string">
+		DELETE FROM PJ_NOTICE WHERE PJ_IDX = #{pj_idx}	
+	</delete>
+	
+	<!-- ==================검색======================= -->
+	
+	<!-- 작성자 아이디로 검색 -->
+	<select id="writerList" parameterType="string" resultType="com.servlet.project.vo.PjNoticeVO">
+		SELECT * FROM PJ_NOTICE
+		WHERE WRITER LIKE  '%' ||  #{writer} || '%'
+		ORDER BY PJ_IDX DESC
+	</select>
+	
+	<!-- =====================페이징================== -->
+	
+	<!--  전체 게시글 개수 조회 -->
+	<select id="totalCount" resultType="int">
+		SELECT COUNT(*) AS CNT FROM PJ_NOTICE
+	</select>
+	
+	<!-- 페이지 해당 게시글 조회 -->
+	<select id="list" resultType="com.servlet.project.vo.PjNoticeVO" parameterType="map">
+		SELECT * FROM (
+        		SELECT ROWNUM R_NUM, PJ_NOTICE.* FROM (
+        				SELECT * FROM PJ_NOTICE
+        					ORDER BY PJ_IDX DESC
+        				)PJ_NOTICE 
+					) WHERE R_NUM BETWEEN ${begin} AND ${end}
+	</select>
+	
+	<!-- ===================댓글=================== -->
+	<!-- 댓글 조회 -->
+	<select id="commList" parameterType="int" resultType="com.servlet.project.vo.PjNoticeVO">
+		SELECT C_IDX, WRITER, CONTENT, WRITE_DATE
+		FROM PJ_COMMENT
+    	WHERE PJ_IDX = #{pj_idx}
+    	ORDER BY C_IDX DESC
+	</select>
+
+	<select id="getListWithKeyword" resultType="com.servlet.project.vo.PjNoticeVO" parameterType="map">
+        <![CDATA[
+		select *
+		from pj_notice
+		where upper(${field}) like '%' || upper(#{query}) || '%'
+		order by pj_idx desc
+		]]>
+    </select>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="ans_delete" parameterType="string">
+		DELETE FROM PJ_COMMENT
+		WHERE C_IDX = #{c_idx}
+	</delete> 
+	
+	<!-- 댓글 개수 -->
+	<update id="update_com_count" parameterType="int">
+		UPDATE PJ_NOTICE PN
+			SET PN.COM_COUNT = (SELECT COUNT(C_IDX)
+                    			FROM PJ_COMMENT
+                   				 WHERE PJ_IDX = #{pj_idx})
+			WHERE PN.PJ_IDX = #{pj_idx}
+	</update>
+	
+	<!-- ===================조회수=================== -->
+	<update id="hitup" parameterType="int">
+		UPDATE PJ_NOTICE 
+		SET HIT = HIT+1
+    	WHERE PJ_IDX = #{pj_idx}	
+	</update>
+</mapper>

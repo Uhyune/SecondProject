@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="mybatis/db.properties"/>
+    <settings>
+        <setting name="cacheEnabled" value="false"/>
+        <setting name="useGeneratedKeys" value="true"/>
+        <setting name="defaultExecutorType" value="REUSE"/>
+    </settings>
+
+    <!--  <typeAliases>-->
+    <!--    <typeAlias type="com.servlet.bit.domain.DataBoardVO" alias="DataBoardVO"/>-->
+    <!--  </typeAliases>-->
+    <!-- 오라클 연결하는 부분 : getConnection() -->
+    <environments default="development"><!-- 개발 환경을 만든다 -->
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <!-- 오라클 정보를 모아서 MyBatis 라이브러리에 전송 : DataSource -->
+            <dataSource type="POOLED">
+                <!-- 오라클 연결을 위한 기본정보를 마이바티스로 전송 -->
+                <property name="driver" value="${driver}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${username}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+  
+  <mappers>
+    <mapper resource="attendance/mapper.xml"/>
+  </mappers>
+</configuration>
+
+
+
+
+

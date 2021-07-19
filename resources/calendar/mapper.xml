@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="bitcamp">
+	<select id="allEvent" resultType="com.servlet.calendar.model.vo.CalendarVO">
+		SELECT * FROM EVENTS
+	</select>
+	
+	<select id="oneEvent" resultType="com.servlet.calendar.model.vo.CalendarVO" parameterType="string">
+		SELECT * FROM EVENTS WHERE ID = #{id}
+	</select>
+	
+	<insert id="addEvent" parameterType="HashMap">
+		INSERT INTO EVENTS(PROJECT_ID, TITLE, START_DATE, END_DATE, COLOR, TEXT_COLOR, DETAIL, ID) 
+		VALUES('PRO001', #{title}, #{start_date}, #{end_date},#{color}, #{text_color}, #{detail}, EVENTS_ID_SEQ.nextval)
+	</insert>
+	
+	<update id="updateEvent" parameterType="HashMap">
+		UPDATE EVENTS SET TITLE = #{title}, START_DATE =#{start_date}, END_DATE = #{end_date},
+		COLOR = #{color}, TEXT_COLOR = #{text_color}, DETAIL = #{detail}
+		WHERE ID = #{id}
+	</update>
+
+	<delete id="deleteEvent" parameterType="string">
+		DELETE FROM EVENTS WHERE ID = #{id}
+	</delete>
+</mapper>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="BIT">
+  	<!-- select 태그 3개 속성 id, parameterType, resultType 
+  	id : 사용할 명칭(필수항목), 현재 매퍼에서 유일한 이름 사용
+  	parameterType : 전달받은 파라미터 데이터 타입 지정(선택적)
+  	resultType : 조회 결과값 저장하기 위한 데이터 타입
+  		(데이터 하나에 대한 타입 지정)
+  	-->
+
+	<!-- 페이지 해당 게시글 조회 -->
+	<select id="list" resultType="com.servlet.hansol.bit.vo.BITVO"
+			parameterType="map">
+		SELECT *
+		  FROM (SELECT ROWNUM R_NUM, BIT.*
+		          FROM (SELECT *
+		                  FROM BIT_T
+		                 ORDER BY B_IDX DESC
+		               ) BIT
+		       )
+		 WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<!-- 게시글 하나 조회 -->
+	<select id="one" parameterType="int" resultType="com.servlet.hansol.bit.vo.BITVO">
+		SELECT * 
+		  FROM BIT_T
+		 WHERE B_IDX = #{b_idx}
+	</select>
+	
+	<!-- 게시글 작성 -->
+	<insert id="insert" parameterType="com.servlet.hansol.bit.vo.BITVO">
+ 		INSERT INTO BIT_T (B_IDX, SUBJECT, WRITER, CONTENT,
+						   WRITE_DATE, HIT)
+		VALUES(BIT_T_SEQ.NEXTVAL, #{subject}, #{writer}, #{content},
+		       SYSDATE, 0)
+	</insert>
+	
+	<!-- 게시글 수정 -->
+	<update id="update" parameterType="com.servlet.hansol.bit.vo.BITVO">
+		UPDATE BIT_T
+		   SET WRITER = #{writer},
+		       SUBJECT = #{subject},
+		       CONTENT = #{content},
+		       WRITE_DATE = SYSDATE
+		 WHERE B_IDX = #{b_idx} 
+	</update>
+	
+	<!-- 게시글 삭제 -->
+	<delete id="delete" parameterType="string">
+   		DELETE FROM BIT_T WHERE B_IDX = #{b_idx}
+   </delete>
+	
+	<!-- 전체 게시글 조회 -->
+	<select id="totalCount" resultType="int">
+		SELECT COUNT(*) AS CNT FROM BIT_T
+	</select>
+	
+	<!-- 조회수  -->
+	<update id="plusReadCount" parameterType="int">
+		UPDATE BIT_T
+		SET HIT = HIT+1
+    	WHERE B_IDX = #{b_idx}	
+	</update>
+	
+	<!-- 작성자 아이디로 검색  -->
+	<select id="writerList" parameterType="string" resultType="com.servlet.hansol.bit.vo.BITVO">
+		SELECT * FROM BIT_T
+		 WHERE WRITER LIKE '%' || #{writer} '%'
+		 ORDER BY WRITE_DATE DESC
+	</select>
+	
+	
+	<!-- 대소문자 구분없는 검색을 위한 filed & keyword 에 upper 처리 -->
+     <select id="getListWithKeyword" resultType="com.servlet.hansol.bit.vo.BITVO" parameterType="map">
+          SELECT * FROM BIT_T
+          WHERE UPPER(#{field}) LIKE '%' || UPPER (#{query}) || '%'
+          ORDER BY B_IDX DESC
+    </select> 
+	
+
+	
+	
+	<!--  ===================================== -->
+    <!-- 유현 : 회원가입 -->
+    <insert id="sign" parameterType="com.servlet.u.model.MemberVO">	
+	INSERT INTO MEMBER
+	VALUES (#{id}, #{password}, #{name}, #{email}, #{phone})
+	</insert>
+	
+	<!-- 회원가입 정보 보여주기 -->
+	<select id="read" resultType = "com.servlet.u.model.MemberVO">
+	select * from member where id = #{id}
+	</select>
+	
+	<!-- 로그인 확인 -->
+	<select id="login" resultType="com.servlet.u.model.MemberVO">
+	SELECT * FROM MEMBER WHERE ID = #{id} AND PASSWORD = #{password}
+	</select>
+	
+	<!-- 이메일 중복 확인 -->
+	<select id="email" resultType = "com.servlet.u.model.MemberVO">
+	select * from member where email = #{email}
+	</select>
+    
+</mapper>

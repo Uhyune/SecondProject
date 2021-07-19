@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.xml">
+    <select id="getList" resultType="com.servlet.bit.domain.DataBoardVOView">
+            <![CDATA[
+        select *
+        from data_board_view
+        order by post_no desc
+        ]]>
+        </select>
+
+    <!-- 대소문자 구분없는 검색을 위한 filed & keyword 에 upper 처리 -->
+    <select id="getListWithKeyword" resultType="com.servlet.bit.domain.DataBoardVOView" parameterType="hashMap">
+        <![CDATA[
+        select *
+        from data_board_view
+        where upper(${field}) like '%' || upper(#{keyword}) || '%'
+        order by post_no desc
+        ]]>
+    </select>
+
+    <!-- 페이징 처리 -->
+    <select id="getListWithPage" resultType="com.servlet.bit.domain.DataBoardVOView" parameterType="hashMap">
+        <![CDATA[
+        select *
+        from (select rownum num, d.*
+              from (select *
+                    from data_board_view
+                    where upper(${field}) like '%' || upper(#{keyword}) || '%'
+                    order by post_no desc) d)
+        where num between ${1+(page-1)*10} and ${page*10}
+        ]]>
+    </select>
+
+    <insert id="insertWithOutFile">
+        insert into data_board(post_no, post_title, post_content, writer_name)
+        values (data_board_seq.nextval, #{post_title}, #{post_content}, #{writer_name})
+    </insert>
+
+    <insert id="insert">
+        insert into data_board(post_no, post_title, post_content, writer_name, attached_file)
+        values (data_board_seq.nextval, #{post_title}, #{post_content}, #{writer_name}, #{attached_file})
+    </insert>
+
+    <insert id="insertSelectKey">
+        <selectKey keyProperty="post_no" order="BEFORE" resultType="long">
+            select data_board_seq.nextval from dual
+        </selectKey>
+
+        insert into data_board (post_no, post_title, post_content, writer_name)
+        values (#{post_no}, #{post_title}, #{post_content} , #{writer_name})
+    </insert>
+
+    <select id="read" resultType="com.servlet.bit.domain.DataBoardVO">
+        select *
+        from data_board
+        where post_no = #{post_no}
+    </select>
+
+    <delete id="delete">
+        delete
+        from data_board
+        where post_no = #{post_no}
+    </delete>
+
+    <update id="updateWithOutFile">
+        update data_board
+        set post_title=#{post_title},
+            post_content=#{post_content}
+        where post_no = #{post_no}
+    </update>
+
+    <update id="update">
+        update data_board
+        set post_title=#{post_title},
+            post_content=#{post_content},
+            attached_file=#{attached_file}
+        where post_no = #{post_no}
+    </update>
+
+    <sql id="criteria">
+        <trim prefix="(" suffix=") AND " prefixOverrides="OR">
+            <foreach collection="typeArr" item="type">
+                <trim prefix="OR">
+                    <choose>
+                        <when test="type=='T'.toString()">
+                            post_title like '%' || #{keyword} || '%'
+                        </when>
+                        <when test="type=='C'.toString()">
+                            post_content like '%' || #{keyword} || '%'
+                        </when>
+                        <when test="type=='W'.toString()">
+                            writer_name like '%' || #{keyword} || '%'
+                        </when>
+                    </choose>
+                </trim>
+            </foreach>
+        </trim>
+    </sql>
+
+    <select id="getListWithPaging" resultType="com.servlet.bit.domain.DataBoardVO">
+        <![CDATA[
+        select post_no, post_title, post_content, writer_name, reg_date
+        from (
+                 select /*+INDEX_DESC(data_board pk_board) */
+                     rownum rn, post_no, post_title, post_content, writer_name, reg_date
+                 from data_board
+                 where
+        ]]>
+
+        <include refid="criteria"></include>
+
+        <![CDATA[
+        rownum <= #{pageNum} * #{amount}
+        )
+        where rn > (#{pageNum} - 1) * #{amount}]]>
+    </select>
+
+    <!-- 모든 데이터 수 -->
+    <select id="getTotalCount" resultType="int">
+        select count(*)
+        from data_board
+        where post_no > 0
+    </select>
+
+    <select id="getConditionalCount" resultType="int">
+        <![CDATA[
+        select count(post_no)
+        from (select rownum num, d.*
+              from (select *
+                    from data_board_view
+                    where upper(${field}) like '%' || upper(#{keyword}) || '%') d)
+--         where num between ${1+(page-1)*10} and ${page*10}
+        ]]>
+    </select>
+
+    <!-- 조회수 업데이트 -->
+    <update id="update_hit" parameterType="long">
+        update data_board
+        set hit = hit + 1
+        where post_no = #{post_no}
+    </update>
+
+</mapper>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="attendance">
+
+<!-- 	전체 게시글 갯수 조회 -->
+	<select id="totalCount" resultType="int">
+		SELECT COUNT(*) AS CNT FROM ATTENDANCE
+	</select>
+	<!-- 페이지 해당 게시글 조회 -->
+	<select id="list" resultType="com.servlet.attendance.vo.AttVO" parameterType="map">
+		SELECT *
+		  FROM (SELECT ROWNUM R_NUM, ATT.*
+		          FROM (SELECT *
+		                  FROM ATTENDANCE
+		                  WHERE AVAILABLE = 1
+		                 ORDER BY A_IDX DESC
+		               ) ATT
+		       )
+		 WHERE R_NUM BETWEEN #{begin} AND #{end}
+	</select>
+	
+	<!--게시글 하나 조회 -->
+	<select id="one" parameterType="string" resultType="com.servlet.attendance.vo.AttVO">
+		SELECT *
+		FROM ATTENDANCE
+		WHERE A_IDX = #{a_idx}
+	</select>
+	
+	<!-- 제목으로 검색 -->
+<!-- 	<select id="titleSearch" parameterType="string" resultType="AttVO"> -->
+<!-- 		SELECT A_IDX, A_TYPE, A_TITLE, A_WRITER, WRITE_DATE, MOD_DATE, STATUS -->
+<!-- 		    FROM ATTENDANCE  -->
+<!-- 		    WHERE A_TITLE LIKE '% #{a_title} %' -->
+<!-- 		    ORDER BY WRITE_DATE DESC -->
+<!-- 	</select> -->
+	
+	<!-- 내용으로 검색 -->
+	<select id="contentSearch" parameterType="string" resultType="com.servlet.attendance.vo.AttVO">
+		SELECT A_IDX, A_TYPE, A_TITLE, A_WRITER, WRITE_DATE, MOD_DATE, STATUS
+		    FROM ATTENDANCE 
+		    WHERE A_CONTENT LIKE '% #{a_content} %'
+		    ORDER BY WRITE_DATE DESC
+	</select>
+	
+	<!-- 이름으로 검색 -->
+	<select id="writerSearch" parameterType="string" resultType="com.servlet.attendance.vo.AttVO">
+		SELECT A_IDX, A_TYPE, A_TITLE, A_WRITER, WRITE_DATE, MOD_DATE, STATUS
+		    FROM ATTENDANCE 
+		    WHERE A_WRITER LIKE '% #{a_writer} %'
+		    ORDER BY WRITE_DATE DESC
+	</select>
+	
+	<!-- 분류로 검색 -->
+	<select id="typeSearch" parameterType="string" resultType="com.servlet.attendance.vo.AttVO">
+		SELECT A_IDX, A_TYPE, A_TITLE, A_WRITER, WRITE_DATE, MOD_DATE, STATUS
+		    FROM ATTENDANCE 
+		    WHERE A_TYPE LIKE '%#{a_type}%'
+		    ORDER BY A_IDX DESC
+	</select>
+	
+	<!-- 월별로 검색 -->
+	<select id="monthSearch" parameterType="string" resultType="com.servlet.attendance.vo.AttVO">
+		SELECT A_IDX, A_TYPE, A_TITLE, A_WRITER, WRITE_DATE, MOD_DATE, STATUS
+		    FROM ATTENDANCE 
+		    WHERE WRITE_DATE BETWEEN TO_DATE('2021-#{month}-01', 'yyyy-MM-dd') AND TO_DATE('2021-#{month}-31', 'yyyy-MM-dd')
+    ORDER BY WRITE_DATE DESC
+	</select>
+
+	<!-- insert문 -->
+	<insert id="insert" parameterType="com.servlet.attendance.vo.AttVO">
+		INSERT INTO ATTENDANCE 
+   		 (A_IDX, A_TITLE, A_CONTENT, A_TYPE, A_WRITER, WRITE_DATE, MOD_DATE, AVAILABLE, STATUS )
+   			 VALUES (ATTENDANCE_SEQ.NEXTVAL, #{a_title}, #{a_content}, #{a_type}, #{a_writer}, sysdate, sysdate, 1, 0)
+	</insert>
+	
+	<!-- update문 -->
+	<update id="update" parameterType="com.servlet.attendance.vo.AttVO">
+		UPDATE attendance 
+		    SET 
+		    A_TITLE = #{a_title},
+		    A_CONTENT = #{a_content},
+		    A_TYPE = #{a_type},
+		    A_WRITER = #{a_writer},
+		    AVAILABLE = 1,
+		    STATUS = 0,
+		    MOD_DATE = SYSDATE
+		    WHERE A_IDX = #{a_idx}
+	</update>
+	
+	<!-- available 0으로 만드는 fakeDelete문 -->
+	<update id="fakeDelete" parameterType="com.servlet.attendance.vo.AttVO">
+		UPDATE ATTENDANCE 
+		    SET AVAILABLE = 0
+		    WHERE A_IDX = #{a_idx}
+	</update>
+	
+	<!-- 진짜 delete문 -->
+	<delete id="delete" parameterType="string">
+		DELETE FROM ATTENDANCE 
+ 			WHERE A_IDX = #{a_idx}
+	</delete>
+	
+</mapper>
+
+
+
+
